@@ -1,0 +1,51 @@
+﻿@page "/ChatHistory"
+@using FileSystemWatcher.Services
+@using FileSystemWatcher.Model
+@inject TelegramBotService BotService
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <td>Nachricht</td>
+            <td>User</td>
+            <td>Datum</td>
+        </tr>
+    </thead>
+    @if (Messages != null)
+    {
+<tbody>
+    @foreach (var item in Messages)
+    {
+    <tr>
+        <td>@item.Message</td>
+        <td>@item.User_FirstName</td>
+        <td>@item.Created.ToString()</td>
+        <td><button @onclick="o => OnClick(item)">Subscribe</button></td>
+    </tr>
+
+    }
+</tbody>
+    }
+</table>
+
+
+
+
+@code {
+
+
+    private List<TelegramMessage> Messages;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Messages = await BotService.GetChatHistoryAsync();
+    }
+
+
+    private void OnClick (TelegramMessage Message)
+    {
+        BotService.Subscribe(Message);
+    }
+
+}

@@ -1,0 +1,50 @@
+﻿@page "/Subscription"
+@using FileSystemWatcher.Services
+@using FileSystemWatcher.Model
+
+@inject TelegramBotService BotService
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <td>Vorname</td>
+            <td>Nachname</td>
+            <td>Chat ID</td>
+        </tr>
+    </thead>
+    @if (fileSystemSubscriptions != null)
+    {
+        <tbody>
+            @foreach (var item in fileSystemSubscriptions)
+            {
+            <tr>
+                <td>@item.User_FirstName</td>
+                <td>@item.User_LastName</td>
+                <td>@item.Chat_ID.ToString()</td>
+                <td><button @onclick="o => OnDelete(item)">Delete</button></td>
+            </tr>
+
+            }
+        </tbody>
+    }
+</table>
+
+
+
+@code { 
+
+    private List<FileSystemSubscription> fileSystemSubscriptions;
+
+    protected async override Task OnInitializedAsync()
+    {
+        fileSystemSubscriptions = await BotService.GetSubscription();
+    }
+
+    private async void OnDelete (FileSystemSubscription fileSystemSubscription)
+    {
+        fileSystemSubscriptions = null;
+        await BotService.DelteSubscription(fileSystemSubscription);
+        fileSystemSubscriptions = await BotService.GetSubscription();
+    }
+}

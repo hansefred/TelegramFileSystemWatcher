@@ -1,0 +1,38 @@
+version: '3.4'
+
+networks:
+  docker:
+    driver: bridge
+services:
+  filesystemwatcher:
+    image: ${DOCKER_REGISTRY-}filesystemwatcher
+    build:
+      context: .
+      dockerfile: FileSystemWatcher/Dockerfile
+    container_name: TelegrammBot
+    depends_on:
+    - DB
+    networks:
+    - docker
+    volumes:
+    -   C:\Users\i00109253\source\repos\FileSystemWatcher\WatchThis:/media/watcher
+
+
+
+  DB:
+    image: mysql
+    container_name: DB
+    environment:
+    - MYSQL_ROOT_PASSWORD=root
+    volumes:
+    - TelegrammDB:/var/lib/mysql
+    networks:
+    - docker
+
+
+
+volumes:
+  TelegrammDB:
+
+
+

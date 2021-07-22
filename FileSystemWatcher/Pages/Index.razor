@@ -1,0 +1,43 @@
+﻿@page "/"
+@using FileSystemWatcher.Services
+@using FileSystemWatcher.Model
+@inject SystemDataService SystemDataService
+
+
+@if (Data != null)
+{
+<table style="border-collapse: collapse; width: 100%;" border="1">
+    <tbody>
+        <tr>
+            <td style="width: 50%;">Letzte Aktualisierung</td>
+            <td style="width: 50%;">@Data.CreatedDate.AddHours(2).ToLocalTime()</td>
+        </tr>
+        <tr>
+            <td style="width: 50%;">Bearbeitete Daten</td>
+            <td style="width: 50%;">@Data.ProcessedFiles</td>
+        </tr>
+        <tr>
+            <td style="width: 50%;">Fotos versendet</td>
+            <td style="width: 50%;">@Data.SendPhotos</td>
+        </tr>
+        <tr>
+            <td style="width: 50%;">Videos versendet</td>
+            <td style="width: 50%;">@Data.SendVideos</td>
+        </tr>
+    </tbody>
+</table>
+}
+
+
+@code
+{
+
+    private SystemData Data;
+
+    protected override void OnInitialized()
+    {
+        Data = SystemDataService.GetSystemData();
+
+    }
+
+}
