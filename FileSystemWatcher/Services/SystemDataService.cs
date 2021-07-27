@@ -1,5 +1,6 @@
 ﻿using FileSystemWatcher.Data;
 using FileSystemWatcher.Model;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,19 +12,11 @@ namespace FileSystemWatcher.Services
     {
 
         private readonly SystemDataFactory _systemDataFactory;
+
         public SystemDataService(SystemDataFactory systemDataFactory)
         {
             _systemDataFactory = systemDataFactory;
 
-            if (GetSystemData() == null)
-            {
-                using (var context = _systemDataFactory.Create())
-                {
-
-                    context.Add(new SystemData() { CreatedDate = DateTime.UtcNow, ProcessedFiles = 0, SendPhotos = 0, SendVideos = 0 });
-                    context.SaveChanges();
-                }
-            }
 
         }
 
@@ -31,6 +24,23 @@ namespace FileSystemWatcher.Services
         {
             using (var context = _systemDataFactory.Create())
             {
+                if (context.SystemDatas.Count() == 0)
+                {
+                    try
+                    {
+                       
+
+                            context.Add(new SystemData() { CreatedDate = DateTime.UtcNow, ProcessedFiles = 0, SendPhotos = 0, SendVideos = 0 });
+                            context.SaveChanges();
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error($"Cant create Default System Data Entry: {ex.Message}");
+                    }
+
+                }
+
                 return context.SystemDatas.OrderBy(o => o.CreatedDate).LastOrDefault();
             }
         }
