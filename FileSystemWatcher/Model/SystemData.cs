@@ -14,5 +14,11 @@ namespace FileSystemWatcher.Model
         public long SendVideos { get; set; }
 
         public DateTime CreatedDate { get; set; }
+
+
+        public override string ToString()
+        {
+            return $"ProcessedFiles: {ProcessedFiles}, SendedPhotos: {SendPhotos}, Sended Videos: {SendVideos} last change(UTC Time): {CreatedDate.ToLongDateString()}";
+        }
     }
 }

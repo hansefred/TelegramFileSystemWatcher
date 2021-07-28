@@ -39,61 +39,66 @@ namespace FileSystemWatcher.Services
         
         private void _fileSystemWatcher_Created(object sender, System.IO.FileSystemEventArgs e)
         {
-
-            _logger.Information($"Neue Datei {e.Name}");
-            _systemDataService.IncProcessedFiles();
-
-            Task.Run(async () =>
+            // if file no directory 
+            if (File.Exists(e.FullPath))
             {
+                _logger.Information($"Neue Datei {e.Name}");
+                _systemDataService.IncProcessedFiles();
 
-
-           
-
-                try
+                Task.Run(async () =>
                 {
 
-                    if (e.ChangeType == System.IO.WatcherChangeTypes.Created)
+
+
+
+                    try
                     {
-                        FileInfo file = new FileInfo(e.FullPath);
 
-
-
-                        if (file.Extension.ToLower() == ".mp4")
+                        if (e.ChangeType == System.IO.WatcherChangeTypes.Created)
                         {
-                            WaitForFileComplete(file);
+                            FileInfo file = new FileInfo(e.FullPath);
 
-                            var Users = await _telegramBotService.GetSubscription();
-                            await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FullPath, e.Name);
+
+
+                            if (file.Extension.ToLower().Contains(".mp4"))
+                            {
+                                WaitForFileComplete(file);
+
+                                var Users = await _telegramBotService.GetSubscription();
+                                await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FullPath, e.Name);
+
+
+                            }
+                            if (file.Extension.ToLower().Contains(".jpg") || file.Extension.ToLower().Contains(".png"))
+                            {
+                                WaitForFileComplete(file);
+                                var Users = await _telegramBotService.GetSubscription();
+                                await _telegramBotService.SendPhoto(Users.Select(o => o.Chat_ID).ToList(), "", e.FullPath, e.Name);
+                            }
 
 
                         }
-                        if (file.Extension.ToLower() == ".jpg" || file.Extension.ToLower() == ".png")
-                        {
-                            WaitForFileComplete(file);
-                            var Users = await _telegramBotService.GetSubscription();
-                            await _telegramBotService.SendPhoto(Users.Select(o => o.Chat_ID).ToList(),"", e.FullPath, e.Name);
-                        }
-
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Fehler beim verarbeiten der Datei: {ex.Message}");
 
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Fehler beim verarbeiten der Datei: {ex.Message}");
-                  
-                }
-                try
-                {
-                    File.Delete(e.FullPath);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Error deleting File: {e.FullPath}, Error: {ex.Message}");
-                    
-                }
-               
+                    try
+                    {
 
-            });
+                        //File.Delete(e.FullPath);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error deleting File: {e.FullPath}, Error: {ex.Message}");
+
+                    }
+
+
+                });
+            }
 
         }
 
@@ -111,9 +116,16 @@ namespace FileSystemWatcher.Services
 
         static void WaitForFileComplete(FileInfo file)
         {
-            long FileLengh;
+            Log.Logger.Information($"Wait for changing Extension: {file.Extension}");
+            while (file.Extension.Contains("_"))
+            {
+                file = new FileInfo (file.FullName);
+                Thread.Sleep (100);
+            }
+            long FileLengh = 0;
             do
             {
+                Log.Logger.Information($"Wait for Filesize Extension: New: {file.Length} Old: {FileLengh.ToString()}");
                 FileLengh = file.Length;
                 Thread.Sleep(100);
             }
