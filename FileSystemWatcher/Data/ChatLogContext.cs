@@ -10,16 +10,19 @@ namespace FileSystemWatcher.Data
 {
     public class ChatLogContext : DbContext
     {
-        public ChatLogContext()
-        {
 
+        private readonly DBOptions _options;
+
+        public ChatLogContext(IOptions<DBOptions> options)
+        {
+            _options = options.Value;
         }
   
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
                 if (!optionsBuilder.IsConfigured)
                 {
-                    optionsBuilder.UseMySql("Server=DB;Port=3306;Database=ChatDB;Uid=root;Pwd=root;", ServerVersion.AutoDetect("Server=localhost;Port=3306;Database=ChatDB;Uid=root;Pwd=root;"));
+                    optionsBuilder.UseMySql(_options.ChatConnection, ServerVersion.AutoDetect(_options.ChatConnection));
                 }
                 base.OnConfiguring(optionsBuilder);
             }

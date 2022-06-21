@@ -65,7 +65,15 @@ namespace FileSystemWatcher.Services
                                 WaitForFileComplete(file);
 
                                 var Users = await _telegramBotService.GetSubscription();
-                                await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FullPath, e.Name);
+                                if (Users.Count > 0)
+                                {
+                                    await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FullPath, e.Name);
+                                }
+                                else
+                                {
+                                    _logger.Information("No Subscription !");
+                                }
+                                                   
 
 
                             }

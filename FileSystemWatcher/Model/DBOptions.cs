@@ -7,9 +7,10 @@ namespace FileSystemWatcher.Model
 {
     public class DBOptions
     {
-        public string DefaultConnection { get; set; }
-        public string ChatConnection { get; set; }
-        public string SystemDataConnection { get; set; }
+        public const string Position = "DBOptions";
+        public string DefaultConnection { get; init; } = String.Empty;
+        public string ChatConnection { get; init; } = String.Empty;
+        public string SystemDataConnection { get; init; } = String.Empty;
 
     }
 }

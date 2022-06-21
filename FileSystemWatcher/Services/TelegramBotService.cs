@@ -50,7 +50,7 @@ namespace FileSystemWatcher.Services
                             {
                                 using (var context = _logContextFactory.Create())
                                 {
-                                    context.Add(new TelegramMessage() { Created = item.Message.Date, User_FirstName = item.Message.From.FirstName, User_LastName = item.Message.From.FirstName, User_UserName = item.Message.From.Username, Chat_id = item.Message.From.Id, Message = item.Message.Text });
+                                    context.Add(new TelegramMessage() { Created = item.Message.Date, User_FirstName = item.Message.From.FirstName, User_LastName = item.Message.From.LastName, User_UserName = item.Message.From.Username, Chat_id = item.Message.From.Id, Message = item.Message.Text });
                                     context.SaveChanges();
                                 }
                             }

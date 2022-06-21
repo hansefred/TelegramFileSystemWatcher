@@ -38,33 +38,22 @@ namespace FileSystemWatcher
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            
+      
+            
+
             Log.Logger = new LoggerConfiguration()
              .WriteTo.Console()
              .CreateLogger();
 
 
-            services.Configure<DBOptions>(o =>
-            {
-                if (Environment.GetEnvironmentVariable ("APPDBConnectingString") != null || Environment.GetEnvironmentVariable("ChatLogConnectingString") != null ||  Environment.GetEnvironmentVariable("SystemDataConnectingString") != null)
-                {
-                    o.ChatConnection = Environment.GetEnvironmentVariable("ChatLogConnectingString");
-                    o.DefaultConnection = Environment.GetEnvironmentVariable("APPDBConnectingString");
-                    o.SystemDataConnection = Environment.GetEnvironmentVariable("SystemDataConnectingString");
+            services.Configure<DBOptions>(Configuration.GetSection(DBOptions.Position));
 
-                }
-                else
-                {
-                    Log.Error("Not all ENV Variable for DB connect set, Exit!");
-                    Environment.Exit(-1);
-                }
+            services.AddDbContext<ApplicationDbContext>();
 
 
-            });
-
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseMySql(Environment.GetEnvironmentVariable("APPDBConnectingString"), ServerVersion.AutoDetect(
-                    Environment.GetEnvironmentVariable("APPDBConnectingString"))));
+            
+                    
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
@@ -75,23 +64,9 @@ namespace FileSystemWatcher
 
            
 
+            
 
-
-            services.Configure<ProgramOptions>(options =>
-            {
-                if (Environment.GetEnvironmentVariable("APIKey") != null || Environment.GetEnvironmentVariable("WatchDir") != null || Environment.GetEnvironmentVariable("PoolingInverval") != null)
-                {
-                    options.PoolingInverval = TimeSpan.FromSeconds(Convert.ToInt32(Environment.GetEnvironmentVariable("PoolingInverval")));
-                    options.APIKey = Environment.GetEnvironmentVariable("APIKey");
-                    options.WatchingDir = Environment.GetEnvironmentVariable("WatchDir");
-                }
-                else
-                {
-                    Log.Error("PoolingInterval, WatchingDir or APIKey not set ! Exit");
-                    Environment.Exit(-1);
-                }
-
-            });
+            services.Configure<ProgramOptions> (Configuration.GetSection(ProgramOptions.Position));
 
 
             services.AddSingleton<ChatLogContextFactory>();
@@ -109,7 +84,9 @@ namespace FileSystemWatcher
         {
 
             WaitforDB(options.Value.DefaultConnection, Log.Logger);
-    
+
+
+            Thread.Sleep(TimeSpan.FromSeconds(30));
 
             var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
 

@@ -28,22 +28,24 @@ namespace FileSystemWatcher.Services
         {
             Log.Logger.Information($"New Message {e.Message.Text} from {e.Message.From.FirstName}");
 
-            
-            if (_telegramBotService.GetSubscription().Result.Where(o => o.Chat_ID == e.Message.From.Id).FirstOrDefault() != null)
-            {
-                Log.Logger.Information($"User {e.Message.From.FirstName} {e.Message.From.LastName} ({e.Message.From.Username}) is known !");
 
-                if (e.Message.Text.ToLower() == "status")
+                if (_telegramBotService.GetSubscription().Result.Where(o => o.Chat_ID == e.Message.From.Id).FirstOrDefault() != null)
                 {
-                    Log.Logger.Information("Status was requested");
-                    _telegramBotService.SendMessage(e.Message.From.Id, $"{_systemDataService.GetSystemData().ToString()} Uptime: {_stopwatch.Elapsed.ToString()}");
+                    Log.Logger.Information($"User {e.Message.From.FirstName} {e.Message.From.LastName} ({e.Message.From.Username}) is known !");
+
+                    if (e.Message.Text.ToLower() == "status")
+                    {
+                        Log.Logger.Information("Status was requested");
+                        _telegramBotService.SendMessage(e.Message.From.Id, $"{_systemDataService.GetSystemData().ToString()} Uptime: {_stopwatch.Elapsed.ToString()}");
+                    }
+                    else
+                    {
+                        Log.Logger.Information("Command not found sending help");
+                        _telegramBotService.SendMessage(e.Message.From.Id, $"Command: status (Get System Infos)");
+                    }
                 }
-                else
-                {
-                    Log.Logger.Information("Command not found sending help");
-                    _telegramBotService.SendMessage(e.Message.From.Id, $"Command: status (Get System Infos)");
-                }
-            }
+            
+
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

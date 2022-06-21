@@ -2,16 +2,6 @@ version: '3.4'
 
 services:
   filesystemwatcher:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
-      - DOTNET_USE_POLLING_FILE_WATCHER=true
-      - "SystemDataConnectingString=Server=DB;Port=3306;Database=SystemDataDB;Uid=root;Pwd=root;"
-      - "ChatLogConnectingString=Server=DB;Port=3306;Database=ChatDB;Uid=root;Pwd=root;"
-      - "APPDBConnectingString=Server=DB;Port=3306;Database=APPDB;Uid=root;Pwd=root;"
-      - "APIKey=1757919901:AAGNawvu1_1pjjJxcpdrVCwcJYudvPFDF_4"
-      - "WatchDir=/media/watcher" 
-      - "PoolingInverval=20"
     ports:
       - "80"
       - "443"

@@ -1,8 +1,8 @@
 version: '3.4'
-
 networks:
   docker:
     driver: bridge
+
 services:
   filesystemwatcher:
     image: ${DOCKER_REGISTRY-}filesystemwatcher
@@ -10,12 +10,19 @@ services:
       context: .
       dockerfile: FileSystemWatcher/Dockerfile
     container_name: TelegrammBot
+    environment:
+    - APISettings__APIKey=1757919901:AAGNawvu1_1pjjJxcpdrVCwcJYudvPFDF_4
+    - APISettings__PoolingInverval=0.00:00:30
+    - APISettings__WatchingDir=media/watcher
+    - DBOptions__ChatConnection=Server=DB;Port=3306;Database=ChatDB;Uid=root;Pwd=root;
+    - DBOptions__SystemDataConnection=Server=DB;Port=3306;Database=SystemDataDB;Uid=root;Pwd=root;
+    - DBOptions__DefaultConnection=Server=DB;Port=3306;Database=APPDB;Uid=root;Pwd=root;
     depends_on:
     - DB
     networks:
-    - docker
+     - docker
     volumes:
-    -   C:\Users\i00109253\source\repos\FileSystemWatcher\WatchThis:/media/watcher
+    -   C:\Users\Mark\Downloads\WatchThis:/media/watcher
 
 
 
@@ -24,10 +31,11 @@ services:
     container_name: DB
     environment:
     - MYSQL_ROOT_PASSWORD=root
+    networks:
+     - docker
     volumes:
     - TelegrammDB:/var/lib/mysql
-    networks:
-    - docker
+
 
 
 
@@ -35,4 +43,4 @@ volumes:
   TelegrammDB:
 
 
-
+  

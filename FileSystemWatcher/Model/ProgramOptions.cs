@@ -7,6 +7,7 @@ namespace FileSystemWatcher.Model
 {
     public class ProgramOptions
     {
+        public const string Position = "APISettings";
         public string APIKey { get; set; }
         public TimeSpan PoolingInverval { get; set; }
 

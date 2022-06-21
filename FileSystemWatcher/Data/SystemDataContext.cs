@@ -10,16 +10,17 @@ namespace FileSystemWatcher.Data
 {
     public class SystemDataContext : DbContext
     {
-        public SystemDataContext()
+        private readonly DBOptions _options;
+        public SystemDataContext(IOptions<DBOptions> options)
         {
-
+            _options = options.Value;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql("Server=DB;Port=3306;Database=SystemDataDB;Uid=root;Pwd=root;", ServerVersion.AutoDetect("Server=localhost;Port=3306;Database=SystemDataDB;Uid=root;Pwd=root;"));
+                optionsBuilder.UseMySql(_options.SystemDataConnection, ServerVersion.AutoDetect(_options.SystemDataConnection));
             }
             base.OnConfiguring(optionsBuilder);
         }
