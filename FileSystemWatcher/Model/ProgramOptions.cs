@@ -9,7 +9,8 @@ namespace FileSystemWatcher.Model
     {
         public const string Position = "APISettings";
         public string APIKey { get; set; }
-        public TimeSpan PoolingInverval { get; set; }
+        public TimeSpan APIPoolingInverval { get; set; }
+        public TimeSpan FilePoolingInverval { get; set; }
 
         public string WatchingDir { get; set; }
     }

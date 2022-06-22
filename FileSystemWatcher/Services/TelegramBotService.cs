@@ -37,7 +37,7 @@ namespace FileSystemWatcher.Services
             {
                 PoolingTask = Task.Run(() =>
                 {
-                    var Timer = new System.Timers.Timer(_telegramOptions.PoolingInverval.TotalMilliseconds);
+                    var Timer = new System.Timers.Timer(_telegramOptions.APIPoolingInverval.TotalMilliseconds);
                     Timer.Start();
 
                     Timer.Elapsed += ((object sender, System.Timers.ElapsedEventArgs e) =>

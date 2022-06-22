@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 using Microsoft.Extensions.Options;
-using G2Development.FileWatcher;
 using System.IO;
 using System.Linq;
 
@@ -13,13 +12,13 @@ namespace FileSystemWatcher.Services
 {
     public class HostedFileSystemWatcher : IHostedService
     {
-
+        
 
         private readonly ProgramOptions _options;
-        private readonly FileWatcher _fileSystemWatcher;
         private readonly ILogger _logger;
         private readonly TelegramBotService _telegramBotService;
         private readonly SystemDataService _systemDataService;
+        private readonly FileSystemWatcher _fileSystemWatcher;
 
         public HostedFileSystemWatcher(IOptions<ProgramOptions> options, TelegramBotService telegramBotService, SystemDataService systemDataService)
         {
@@ -27,22 +26,20 @@ namespace FileSystemWatcher.Services
             _options = options.Value;
             _logger = Log.Logger;
             _telegramBotService = telegramBotService;
-            _fileSystemWatcher = new FileWatcher(_options.WatchingDir, "*.*");
-            _fileSystemWatcher.EnableRaisingEvents = true;
-            _fileSystemWatcher.AccessSense = AccessSensitivity.Restraint;
-            _fileSystemWatcher.IncludeSubdirectories = true;
-            _fileSystemWatcher.Created += _fileSystemWatcher_Created;
-            _fileSystemWatcher.EnableRaisingEvents = true;
+
+            _fileSystemWatcher = new FileSystemWatcher(_options.WatchingDir, _options.FilePoolingInverval);
+            _fileSystemWatcher.NewFileCreated += _fileSystemWatcher_NewFileCreated; 
+
+
         }
 
-
-        
-        private void _fileSystemWatcher_Created(object sender, System.IO.FileSystemEventArgs e)
+        private void _fileSystemWatcher_NewFileCreated(object sender, NewFileEventArgs e)
         {
+
             // if file no directory 
-            if (File.Exists(e.FullPath))
+            if (File.Exists(e.FileInfo.FullName))
             {
-                _logger.Information($"Neue Datei {e.Name}");
+                _logger.Information($"Neue Datei {e.FileInfo.Name}");
                 _systemDataService.IncProcessedFiles();
 
                 Task.Run(async () =>
@@ -54,9 +51,8 @@ namespace FileSystemWatcher.Services
                     try
                     {
 
-                        if (e.ChangeType == System.IO.WatcherChangeTypes.Created)
-                        {
-                            FileInfo file = new FileInfo(e.FullPath);
+
+                        FileInfo file = e.FileInfo;
 
 
 
@@ -67,7 +63,7 @@ namespace FileSystemWatcher.Services
                                 var Users = await _telegramBotService.GetSubscription();
                                 if (Users.Count > 0)
                                 {
-                                    await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FullPath, e.Name);
+                                    await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FileInfo.FullName, e.FileInfo.Name);
                                 }
                                 else
                                 {
@@ -81,11 +77,10 @@ namespace FileSystemWatcher.Services
                             {
                                 WaitForFileComplete(file);
                                 var Users = await _telegramBotService.GetSubscription();
-                                await _telegramBotService.SendPhoto(Users.Select(o => o.Chat_ID).ToList(), "", e.FullPath, e.Name);
+                                await _telegramBotService.SendPhoto(Users.Select(o => o.Chat_ID).ToList(), "", e.FileInfo.FullName, e.FileInfo.Name);
                             }
 
 
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -100,7 +95,7 @@ namespace FileSystemWatcher.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error($"Error deleting File: {e.FullPath}, Error: {ex.Message}");
+                        _logger.Error($"Error deleting File: {e.FileInfo.FullName}, Error: {ex.Message}");
 
                     }
 
@@ -114,6 +109,11 @@ namespace FileSystemWatcher.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                Thread.Sleep(1000);
+            }
             return Task.CompletedTask;
         }
 
