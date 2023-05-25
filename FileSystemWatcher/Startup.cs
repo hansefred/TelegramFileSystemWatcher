@@ -3,12 +3,9 @@ using FileSystemWatcher.Data;
 using FileSystemWatcher.Model;
 using FileSystemWatcher.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,12 +13,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace FileSystemWatcher
 {
@@ -82,11 +76,11 @@ namespace FileSystemWatcher
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<DBOptions> options)
         {
-
+            Log.Logger.Information("Waiting DB Connection...");
             WaitforDB(options.Value.DefaultConnection, Log.Logger);
 
 
-            Thread.Sleep(TimeSpan.FromSeconds(30));
+            Thread.Sleep(TimeSpan.FromSeconds(5));
 
             var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
 

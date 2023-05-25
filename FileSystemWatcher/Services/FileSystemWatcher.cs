@@ -27,7 +27,8 @@ namespace FileSystemWatcher.Services
         {
             _wachingFilePath = wachingFilePath;
 
-            _oldFileList = GetFileRecusive();
+            //_oldFileList = GetFileRecusive();
+            _oldFileList = new List<FileInfo>();
 
             _timer = new Timer(Duration.TotalMilliseconds);
 
@@ -66,6 +67,7 @@ namespace FileSystemWatcher.Services
             if (_oldFileList.Count > NewList.Count)
             {
                 _oldFileList = NewList;
+                return;
             }
 
             var compared = NewList.Where(p => !_oldFileList.Any(l => p.FullName == l.FullName)).ToList();
@@ -75,10 +77,9 @@ namespace FileSystemWatcher.Services
                 RaiseNewFileEvent(fileInfo);
             }
 
-            if (compared.Count > 0)
-            {
-                _oldFileList = NewList;
-            }
+
+            _oldFileList = NewList;
+            
         }
 
 

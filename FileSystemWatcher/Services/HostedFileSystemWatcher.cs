@@ -12,7 +12,7 @@ namespace FileSystemWatcher.Services
 {
     public class HostedFileSystemWatcher : IHostedService
     {
-        
+
 
         private readonly ProgramOptions _options;
         private readonly ILogger _logger;
@@ -28,7 +28,7 @@ namespace FileSystemWatcher.Services
             _telegramBotService = telegramBotService;
 
             _fileSystemWatcher = new FileSystemWatcher(_options.WatchingDir, _options.FilePoolingInverval);
-            _fileSystemWatcher.NewFileCreated += _fileSystemWatcher_NewFileCreated; 
+            _fileSystemWatcher.NewFileCreated += _fileSystemWatcher_NewFileCreated;
 
 
         }
@@ -56,29 +56,39 @@ namespace FileSystemWatcher.Services
 
 
 
-                            if (file.Extension.ToLower().Contains(".mp4"))
+                        if (file.Extension.ToLower().Contains(".mp4"))
+                        {
+                            WaitForFileComplete(file);
+
+                            var Users = await _telegramBotService.GetSubscription();
+                            if (Users.Count > 0)
                             {
-                                WaitForFileComplete(file);
-
-                                var Users = await _telegramBotService.GetSubscription();
-                                if (Users.Count > 0)
-                                {
-                                    await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FileInfo.FullName, e.FileInfo.Name);
-                                }
-                                else
-                                {
-                                    _logger.Information("No Subscription !");
-                                }
-                                                   
-
-
+                                await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FileInfo.FullName, e.FileInfo.Name);
                             }
-                            if (file.Extension.ToLower().Contains(".jpg") || file.Extension.ToLower().Contains(".png"))
+                            else
                             {
-                                WaitForFileComplete(file);
-                                var Users = await _telegramBotService.GetSubscription();
+                                _logger.Information("No Subscription !");
+                            }
+
+
+
+                        }
+                        if (file.Extension.ToLower().Contains(".jpg") || file.Extension.ToLower().Contains(".png"))
+                        {
+                            WaitForFileComplete(file);
+                            var Users = await _telegramBotService.GetSubscription();
+                            if (Users.Count > 0)
+                            {
                                 await _telegramBotService.SendPhoto(Users.Select(o => o.Chat_ID).ToList(), "", e.FileInfo.FullName, e.FileInfo.Name);
                             }
+                            else
+                            {
+                                _logger.Information("No Subscription !");
+                            }
+
+
+
+                        }
 
 
                     }
@@ -90,7 +100,7 @@ namespace FileSystemWatcher.Services
                     try
                     {
 
-                        //File.Delete(e.FullPath);
+                        File.Delete(e.FileInfo.FullName);
 
                     }
                     catch (Exception ex)
@@ -109,11 +119,6 @@ namespace FileSystemWatcher.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                Thread.Sleep(1000);
-            }
             return Task.CompletedTask;
         }
 
@@ -127,8 +132,8 @@ namespace FileSystemWatcher.Services
             Log.Logger.Information($"Wait for changing Extension: {file.Extension}");
             while (file.Extension.Contains("_"))
             {
-                file = new FileInfo (file.FullName);
-                Thread.Sleep (100);
+                file = new FileInfo(file.FullName);
+                Thread.Sleep(100);
             }
             long FileLengh = 0;
             do

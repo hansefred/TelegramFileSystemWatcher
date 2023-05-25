@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.InputFiles;
+
 
 namespace FileSystemWatcher.Services
 {
@@ -142,7 +142,7 @@ namespace FileSystemWatcher.Services
             });
         }
 
-        public Task<Message> SendPhoto(long ChatID, string Text, string FilePath, string FileName = "", bool DisableNotification = false, int replytoid = 0)
+        public Task<Message> SendPhoto(long ChatID, string Text, string FilePath, string FileName = "", bool DisableNotification = false, int? replytoid = null)
         {
             return Task.Run(async () =>
             {
@@ -152,10 +152,10 @@ namespace FileSystemWatcher.Services
 
                     using (FileStream fs = System.IO.File.OpenRead(FilePath))
                     {
-                        InputOnlineFile inputOnlineFile = new InputOnlineFile(fs, FileName);
+                        InputFile inputOnlineFile = InputFile.FromStream(fs);
                         _systemDataService.IncSendPhotos();
-                        return await _botClient.SendPhotoAsync(ChatID, inputOnlineFile, Text);
-                        
+                        return await _botClient.SendPhotoAsync(ChatID, inputOnlineFile, null, Text, disableNotification: DisableNotification);
+
 
                     }
                 }
@@ -170,6 +170,11 @@ namespace FileSystemWatcher.Services
 
         public Task SendPhoto(List<long> ChatIDs, string Text, string FilePath, string FileName = "", bool DisableNotification = false, int replytoid = 0)
         {
+            if (ChatIDs.Count < 1) 
+            {
+                _logger.Information($"No ChatIDs do nothing");
+                return Task.CompletedTask;
+            }
             return Task.Run(async () =>
             {
                 try
@@ -181,9 +186,9 @@ namespace FileSystemWatcher.Services
                         using (FileStream fs = System.IO.File.OpenRead(FilePath))
                         {
 
-                            InputOnlineFile inputOnlineFile = new InputOnlineFile(fs, FileName);
+                            InputFile inputOnlineFile = InputFile.FromStream(fs);
                             _systemDataService.IncSendPhotos();
-                            var Result = await _botClient.SendPhotoAsync(ChatIDs[0], inputOnlineFile, Text);
+                            var Result = await _botClient.SendPhotoAsync(ChatIDs[0], inputOnlineFile, null, Text, disableNotification: DisableNotification);
 
                             if (Result.Photo.First().FileId != null)
                             {
@@ -195,11 +200,11 @@ namespace FileSystemWatcher.Services
 
                             }
 
-                            var UploadedFile = new InputOnlineFile(Result.Photo.First().FileId);
+                            var UploadedFile = InputFile.FromFileId((Result.Photo.First().FileId));
                             foreach (var ChatID in ChatIDs.GetRange(1, ChatIDs.Count - 1))
                             {
                                 _systemDataService.IncSendPhotos();
-                                await _botClient.SendPhotoAsync(ChatID, UploadedFile, Text);
+                                await _botClient.SendPhotoAsync(ChatID, UploadedFile, null, Text, disableNotification: DisableNotification);
                             }
 
                         }
@@ -224,6 +229,11 @@ namespace FileSystemWatcher.Services
 
         public Task SendVideo(List<long> ChatIDs, string FilePath, string FileName = "", bool DisableNotification = false, int replytoid = 0)
         {
+            if (ChatIDs.Count < 1)
+            {
+                _logger.Information($"No ChatIDs do nothing");
+                return Task.CompletedTask;
+            }
             return Task.Run(async () =>
             {
                 try
@@ -235,9 +245,9 @@ namespace FileSystemWatcher.Services
                         using (FileStream fs = System.IO.File.OpenRead(FilePath))
                         {
 
-                            InputOnlineFile inputOnlineFile = new InputOnlineFile(fs, FileName);
+                            var inputOnlineFile = InputFile.FromStream(fs);
                             _systemDataService.IncSendVideos();
-                            var Result = await _botClient.SendVideoAsync(ChatIDs[0], inputOnlineFile);
+                            var Result = await _botClient.SendVideoAsync(ChatIDs[0], inputOnlineFile, disableNotification: DisableNotification, replyToMessageId: replytoid);
 
                             if (Result.Video.FileId != null)
                             {
@@ -249,7 +259,7 @@ namespace FileSystemWatcher.Services
 
                             }
 
-                            var UploadedFile = new InputOnlineFile(Result.Video.FileId);
+                            var UploadedFile = InputFile.FromFileId(Result.Video.FileId);
                             foreach (var ChatID in ChatIDs.GetRange(1, ChatIDs.Count - 1))
                             {
                                 _systemDataService.IncSendVideos();
