@@ -218,7 +218,7 @@ namespace FileSystemWatcher.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Eror sending Photo: {ex.Message}");
+                    _logger.Error($"Error sending Photo: {ex.Message}");
                 }
 
 
@@ -277,7 +277,7 @@ namespace FileSystemWatcher.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Eror sending Photo: {ex.ToString()}");
+                    _logger.Error($"Error sending Video: {ex.ToString()}");
                 }
 
 

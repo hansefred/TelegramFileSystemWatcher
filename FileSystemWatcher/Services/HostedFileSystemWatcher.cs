@@ -7,6 +7,7 @@ using Serilog;
 using Microsoft.Extensions.Options;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace FileSystemWatcher.Services
 {
@@ -15,18 +16,19 @@ namespace FileSystemWatcher.Services
 
 
         private readonly ProgramOptions _options;
-        private readonly ILogger _logger;
+        private readonly ILogger<HostedFileSystemWatcher> _logger;
         private readonly TelegramBotService _telegramBotService;
         private readonly SystemDataService _systemDataService;
         private readonly FileSystemWatcher _fileSystemWatcher;
 
-        public HostedFileSystemWatcher(IOptions<ProgramOptions> options, TelegramBotService telegramBotService, SystemDataService systemDataService)
+        public HostedFileSystemWatcher(IOptions<ProgramOptions> options, TelegramBotService telegramBotService, SystemDataService systemDataService, ILogger<HostedFileSystemWatcher> logger)
         {
             _systemDataService = systemDataService;
             _options = options.Value;
-            _logger = Log.Logger;
+            _logger = logger;
             _telegramBotService = telegramBotService;
 
+            _logger.LogInformation("Watch for new Files in {FilePath} every {PoolTime} sec", _options.WatchingDir, _options.FilePoolingInverval.TotalSeconds);
             _fileSystemWatcher = new FileSystemWatcher(_options.WatchingDir, _options.FilePoolingInverval);
             _fileSystemWatcher.NewFileCreated += _fileSystemWatcher_NewFileCreated;
 
@@ -39,7 +41,7 @@ namespace FileSystemWatcher.Services
             // if file no directory 
             if (File.Exists(e.FileInfo.FullName))
             {
-                _logger.Information($"Neue Datei {e.FileInfo.Name}");
+                _logger.LogInformation($"Neue Datei {e.FileInfo.Name}");
                 _systemDataService.IncProcessedFiles();
 
                 Task.Run(async () =>
@@ -56,7 +58,7 @@ namespace FileSystemWatcher.Services
 
 
 
-                        if (file.Extension.ToLower().Contains(".mp4"))
+                        if (file.Extension.ToLower() == ".mp4")
                         {
                             WaitForFileComplete(file);
 
@@ -64,29 +66,45 @@ namespace FileSystemWatcher.Services
                             if (Users.Count > 0)
                             {
                                 await _telegramBotService.SendVideo(Users.Select(o => o.Chat_ID).ToList(), e.FileInfo.FullName, e.FileInfo.Name);
+                                try
+                                {
+                                    File.Delete(e.FileInfo.FullName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError($"Error deleting File: {e.FileInfo.FullName}, Error: {ex.Message}");
+                                }
+
                             }
                             else
                             {
-                                _logger.Information("No Subscription !");
+                                _logger.LogInformation("No Subscription !");
                             }
 
 
 
                         }
-                        if (file.Extension.ToLower().Contains(".jpg") || file.Extension.ToLower().Contains(".png"))
+                        if (file.Extension.ToLower() == ".jpg" || file.Extension.ToLower() == ".png")
                         {
                             WaitForFileComplete(file);
                             var Users = await _telegramBotService.GetSubscription();
                             if (Users.Count > 0)
                             {
                                 await _telegramBotService.SendPhoto(Users.Select(o => o.Chat_ID).ToList(), "", e.FileInfo.FullName, e.FileInfo.Name);
+                                try
+                                {
+                                    File.Delete(e.FileInfo.FullName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError($"Error deleting File: {e.FileInfo.FullName}, Error: {ex.Message}");
+                                }
+
                             }
                             else
                             {
-                                _logger.Information("No Subscription !");
+                                _logger.LogInformation("No Subscription !");
                             }
-
-
 
                         }
 
@@ -94,18 +112,7 @@ namespace FileSystemWatcher.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error($"Fehler beim verarbeiten der Datei: {ex.Message}");
-
-                    }
-                    try
-                    {
-
-                        File.Delete(e.FileInfo.FullName);
-
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error($"Error deleting File: {e.FileInfo.FullName}, Error: {ex.Message}");
+                        _logger.LogError($"Fehler beim verarbeiten der Datei: {ex.Message}");
 
                     }
 
