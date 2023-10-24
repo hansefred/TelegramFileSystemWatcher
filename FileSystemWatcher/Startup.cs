@@ -41,6 +41,7 @@ namespace FileSystemWatcher
              .CreateLogger();
 
 
+
             services.Configure<DBOptions>(Configuration.GetSection(DBOptions.Position));
 
             services.AddDbContext<ApplicationDbContext>();
@@ -76,6 +77,10 @@ namespace FileSystemWatcher
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<DBOptions> options)
         {
+
+            Log.Logger.Information("App is in Dev: {DevState}", env.IsDevelopment());
+
+
             Log.Logger.Information("Waiting DB Connection...");
             WaitforDB(options.Value.DefaultConnection, Log.Logger);
 
