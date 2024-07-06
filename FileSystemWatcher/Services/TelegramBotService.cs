@@ -263,7 +263,7 @@ namespace FileSystemWatcher.Services
                             foreach (var ChatID in ChatIDs.GetRange(1, ChatIDs.Count - 1))
                             {
                                 _systemDataService.IncSendVideos();
-                                await _botClient.SendPhotoAsync(ChatID, UploadedFile);
+                                await _botClient.SendVideoAsync(ChatID, UploadedFile);
                             }
 
                         }
