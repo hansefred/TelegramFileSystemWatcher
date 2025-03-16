@@ -42,7 +42,7 @@ namespace FileSystemWatcher.Services
 
                     Timer.Elapsed += ((object sender, System.Timers.ElapsedEventArgs e) =>
                     {
-                        var Updates = _botClient.GetUpdatesAsync().Result;
+                        var Updates = _botClient.GetUpdates().Result;
 
                         foreach (Update item in Updates)
                         {
@@ -59,7 +59,7 @@ namespace FileSystemWatcher.Services
                                 _logger.Error($"Failed to Save ChatMessage {ex.Message}");
                             }
                             OnMessageRecived(item);
-                            _botClient.GetUpdatesAsync(item.Id + 1).Wait();
+                            _botClient.GetUpdates(item.Id + 1).Wait();
                         }
 
                             (sender as System.Timers.Timer).Start();
@@ -105,7 +105,6 @@ namespace FileSystemWatcher.Services
             _logContextFactory = chatLogContextFactory;
             _systemDataService = systemDataService;
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             HttpClientHandler _httpClientHandler = new HttpClientHandler
             {
                 UseProxy = false,
@@ -118,7 +117,7 @@ namespace FileSystemWatcher.Services
             try
             {
                 _botClient = new TelegramBotClient(_telegramOptions.APIKey, _httpClient);
-                var me = _botClient.GetMeAsync().Result;
+                var me = _botClient.GetMe().Result;
                 _logger.Information($"Connected to Bot: {me.FirstName}");
 
 
@@ -137,7 +136,7 @@ namespace FileSystemWatcher.Services
         {
             return Task.Run(async () =>
             {
-                return await _botClient.SendTextMessageAsync(ChatID, Text, disableNotification: DisableNotification, replyToMessageId: replytoid);
+                return await _botClient.SendVideo(ChatID, Text, disableNotification: DisableNotification, replyParameters: new ReplyParameters() { ChatId = replytoid });
 
             });
         }
@@ -154,7 +153,7 @@ namespace FileSystemWatcher.Services
                     {
                         InputFile inputOnlineFile = InputFile.FromStream(fs);
                         _systemDataService.IncSendPhotos();
-                        return await _botClient.SendPhotoAsync(ChatID, inputOnlineFile, null, Text, disableNotification: DisableNotification);
+                        return await _botClient.SendPhoto(ChatID, inputOnlineFile,  caption: Text, disableNotification: DisableNotification);
 
 
                     }
@@ -188,7 +187,7 @@ namespace FileSystemWatcher.Services
 
                             InputFile inputOnlineFile = InputFile.FromStream(fs);
                             _systemDataService.IncSendPhotos();
-                            var Result = await _botClient.SendPhotoAsync(ChatIDs[0], inputOnlineFile, null, Text, disableNotification: DisableNotification);
+                            var Result = await _botClient.SendPhoto(ChatIDs[0], inputOnlineFile,  Text, disableNotification: DisableNotification);
 
                             if (Result.Photo.First().FileId != null)
                             {
@@ -204,7 +203,7 @@ namespace FileSystemWatcher.Services
                             foreach (var ChatID in ChatIDs.GetRange(1, ChatIDs.Count - 1))
                             {
                                 _systemDataService.IncSendPhotos();
-                                await _botClient.SendPhotoAsync(ChatID, UploadedFile, null, Text, disableNotification: DisableNotification);
+                                await _botClient.SendPhoto(ChatID, UploadedFile,  Text, disableNotification: DisableNotification);
                             }
 
                         }
@@ -247,7 +246,7 @@ namespace FileSystemWatcher.Services
 
                             var inputOnlineFile = InputFile.FromStream(fs);
                             _systemDataService.IncSendVideos();
-                            var Result = await _botClient.SendVideoAsync(ChatIDs[0], inputOnlineFile, disableNotification: DisableNotification, replyToMessageId: replytoid);
+                            var Result = await _botClient.SendVideo(ChatIDs[0], inputOnlineFile, disableNotification: DisableNotification, replyParameters: new ReplyParameters() { ChatId = replytoid });
 
                             if (Result.Video.FileId != null)
                             {
@@ -263,7 +262,7 @@ namespace FileSystemWatcher.Services
                             foreach (var ChatID in ChatIDs.GetRange(1, ChatIDs.Count - 1))
                             {
                                 _systemDataService.IncSendVideos();
-                                await _botClient.SendVideoAsync(ChatID, UploadedFile);
+                                await _botClient.SendVideo(ChatID, UploadedFile);
                             }
 
                         }

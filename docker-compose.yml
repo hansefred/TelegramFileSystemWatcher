@@ -35,12 +35,14 @@ services:
      - docker
     volumes:
     - TelegrammDB:/var/lib/mysql
+    - TelegrammDBConf:/etc/
 
 
 
 
 volumes:
   TelegrammDB:
+  TelegrammDBConf:
 
 
   
