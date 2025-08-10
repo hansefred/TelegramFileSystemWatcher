@@ -20,7 +20,7 @@ namespace FileSystemWatcher.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql(_options.SystemDataConnection, ServerVersion.AutoDetect(_options.SystemDataConnection));
+                optionsBuilder.UseMySQL(_options.SystemDataConnection);
             }
             base.OnConfiguring(optionsBuilder);
         }
@@ -44,7 +44,7 @@ namespace FileSystemWatcher.Data
         public SystemDataContext Create()
         {
             var options = new DbContextOptionsBuilder<SystemDataContext>()
-                .UseMySql(_dBOptions.SystemDataConnection, ServerVersion.AutoDetect(_dBOptions.SystemDataConnection)).Options;
+                .UseMySQL(_dBOptions.SystemDataConnection).Options;
 
 
             return new SystemDataContext(options);

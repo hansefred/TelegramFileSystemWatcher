@@ -1,6 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using MySql.EntityFrameworkCore.Metadata;
+using System;
 
 namespace FileSystemWatcher.Migrations.SystemData
 {
@@ -16,7 +17,7 @@ namespace FileSystemWatcher.Migrations.SystemData
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     ProcessedFiles = table.Column<long>(type: "bigint", nullable: false),
                     SendPhotos = table.Column<long>(type: "bigint", nullable: false),
                     SendVideos = table.Column<long>(type: "bigint", nullable: false),

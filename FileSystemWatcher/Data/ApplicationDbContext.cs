@@ -17,7 +17,7 @@ namespace FileSystemWatcher.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql(_dBOptions.DefaultConnection, ServerVersion.AutoDetect(_dBOptions.DefaultConnection));
+                optionsBuilder.UseMySQL(_dBOptions.DefaultConnection);
             }
             base.OnConfiguring(optionsBuilder);
         }

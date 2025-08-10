@@ -22,7 +22,7 @@ namespace FileSystemWatcher.Data
             {
                 if (!optionsBuilder.IsConfigured)
                 {
-                    optionsBuilder.UseMySql(_options.ChatConnection, ServerVersion.AutoDetect(_options.ChatConnection));
+                    optionsBuilder.UseMySQL();
                 }
                 base.OnConfiguring(optionsBuilder);
             }
@@ -49,7 +49,7 @@ namespace FileSystemWatcher.Data
         public ChatLogContext Create()
         {
             var options = new DbContextOptionsBuilder<ChatLogContext>()
-                .UseMySql(_dBOptions.ChatConnection, ServerVersion.AutoDetect(_dBOptions.ChatConnection)).Options;
+                .UseMySQL(_dBOptions.ChatConnection).Options;
 
 
             return new ChatLogContext(options);
